@@ -2,16 +2,20 @@ import cv2
 import tkinter as tk
 from tkinter import filedialog
 from PIL import ImageTk, Image
+import matplotlib
+matplotlib.use("TkAgg")
 from matplotlib import pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 _MAX_SIZE = (200, 200)
-
+_PLOT_SIZE = (5, 5)
 
 class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Procesamiento de imagenes")
-        self.geometry("960x1080")
+        self.geometry("960x540")
         self.resizable(False, False)
         self.preview_img = None  # Variable to handle a reference to selected Image. Without it, the image will not
         self.filepath = ""
@@ -66,9 +70,19 @@ class App(tk.Tk):
 
             # Loading Histogram
             img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
-            hist = cv2.calcHist([img], [0], None, [256], [0, 256])
-            plt.plot(hist, color='gray')
-            plt.xlabel('Intensidad de gris')
-            plt.ylabel('Cantidad de pixeles')
-            plt.show()
+            histogram = cv2.calcHist([img], [0], None, [256], [0, 256])
+
+            # Making the plot for the histogram
+            figure = Figure(dpi=50)
+            axis = figure.add_subplot(111)
+            axis.plot(histogram, color='gray')
+
+            # Embedding plot of matplotlib to Tk
+            canvas = FigureCanvasTkAgg(figure, select_img_frame)
+            canvas.get_tk_widget().grid(row=0, column=2, padx=10, pady=10)
+
+            # plt.plot(histogram, color='gray')
+            # plt.xlabel('Intensidad de gris')
+            # plt.ylabel('Cantidad de pixeles')
+            # plt.show()
 
