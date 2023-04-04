@@ -1,6 +1,8 @@
+import cv2
 import tkinter as tk
 from tkinter import filedialog
 from PIL import ImageTk, Image
+from matplotlib import pyplot as plt
 
 _MAX_SIZE = (200, 200)
 
@@ -9,9 +11,10 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Procesamiento de imagenes")
-        self.geometry("600x700")
+        self.geometry("960x1080")
         self.resizable(False, False)
         self.preview_img = None  # Variable to handle a reference to selected Image. Without it, the image will not
+        self.filepath = ""
         # appear
 
         main_frame = tk.Frame(self)
@@ -49,12 +52,23 @@ class App(tk.Tk):
         def __open_browse_files():
             filepath = filedialog.askopenfilename(initialdir="/",
                                                   title="Select an image",
-                                                  filetypes=[("Image files", ("*.jpg*", "*.png*"))])
-            print(filepath)  # This is just for testing
+                                                  filetypes=[("Image files", ("*.jpg*", "*.png*", "*.jpeg*"))])
+            self.filepath = filepath  # This is just for testing
             preview_img_loaded = Image.open(filepath)
 
             preview_img_loaded.thumbnail(_MAX_SIZE, Image.Resampling.LANCZOS)
 
+            preview_img_loaded = preview_img_loaded.convert("L")
+
             self.preview_img = ImageTk.PhotoImage(preview_img_loaded)
 
             label_selected_img.config(image=self.preview_img)
+
+            # Loading Histogram
+            img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
+            hist = cv2.calcHist([img], [0], None, [256], [0, 256])
+            plt.plot(hist, color='gray')
+            plt.xlabel('Intensidad de gris')
+            plt.ylabel('Cantidad de pixeles')
+            plt.show()
+
