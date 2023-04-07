@@ -15,11 +15,13 @@ class App(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Procesamiento de imagenes")
-        self.geometry("960x540")
+        self.geometry("960x720")
         self.resizable(False, False)
         self.preview_img = None  # Variable to handle a reference to selected Image. Without it, the image will not
-        self.filepath = ""
         # appear
+        self.output_img = None
+        self.filepath = ""
+        self.img_to_process = None
 
         main_frame = tk.Frame(self)
         main_frame.pack()
@@ -48,10 +50,34 @@ class App(tk.Tk):
         label_selected_img.grid(row=0, column=1, padx=10, pady=10)
 
         # Process_img_option_frame elements
-        button_ecualizar = tk.Button(process_img_option_frame, text="Ecualizar", font=('Segoe UI', 10), width=24)
+        button_ecualizar = tk.Button(process_img_option_frame, text="Ecualizar", font=('Segoe UI', 10), width=24,
+                                     command=lambda: __equalization_image())
         button_expandir = tk.Button(process_img_option_frame, text="Expandir", font=('Segoe UI', 10), width=24)
         button_ecualizar.grid(row=0, column=0, padx=10, pady=10)
         button_expandir.grid(row=0, column=1, padx=10, pady=10)
+
+        # output_frame elements
+        label_output_image = tk.Label(output_frame)
+        label_output_image.grid(row=0, column=0, padx=10, pady=10)
+
+        def __embed_histogram_plot_to_tkinter(img, frame: tk.Frame, _row: int, _column: int) -> None:
+
+            histogram = cv2.calcHist([img], [0], None, [256], [0, 256])
+
+            # Making the plot for the histogram
+            figure = Figure(dpi=50)
+            axis = figure.add_subplot(111)
+            axis.plot(histogram, color='gray')
+
+            # Embedding plot of matplotlib to Tk
+            canvas = FigureCanvasTkAgg(figure, frame)
+            canvas.get_tk_widget().grid(row=_row, column=_column, padx=10, pady=10)
+
+        def __embed_img_to_tkinter(img) -> None:
+            im = Image.fromarray(img)
+            im.thumbnail(_MAX_SIZE, Image.Resampling.LANCZOS)
+            self.output_img = ImageTk.PhotoImage(image=im)
+            label_output_image.config(image=self.output_img)
 
         def __open_browse_files():
             filepath = filedialog.askopenfilename(initialdir="/",
@@ -68,21 +94,17 @@ class App(tk.Tk):
 
             label_selected_img.config(image=self.preview_img)
 
-            # Loading Histogram
-            img = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
-            histogram = cv2.calcHist([img], [0], None, [256], [0, 256])
+            self.img_to_process = cv2.imread(filepath, cv2.IMREAD_GRAYSCALE)
 
-            # Making the plot for the histogram
-            figure = Figure(dpi=50)
-            axis = figure.add_subplot(111)
-            axis.plot(histogram, color='gray')
+            __embed_histogram_plot_to_tkinter(self.img_to_process, select_img_frame, 0, 2)
 
-            # Embedding plot of matplotlib to Tk
-            canvas = FigureCanvasTkAgg(figure, select_img_frame)
-            canvas.get_tk_widget().grid(row=0, column=2, padx=10, pady=10)
+        def __equalization_image():
+            img = cv2.equalizeHist(self.img_to_process)
+            __embed_histogram_plot_to_tkinter(img, output_frame, 0, 1)
+            __embed_img_to_tkinter(img)
 
-            # plt.plot(histogram, color='gray')
-            # plt.xlabel('Intensidad de gris')
-            # plt.ylabel('Cantidad de pixeles')
-            # plt.show()
+            if self.img_to_process is not None:
+                del self.img_to_process
 
+        def __expand_image():
+            pass
