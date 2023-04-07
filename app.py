@@ -10,6 +10,8 @@ from matplotlib.figure import Figure
 
 _MAX_SIZE = (200, 200)
 _PLOT_SIZE = (5, 5)
+_ALPHA = 1.5
+_BETA = 10
 
 class App(tk.Tk):
     def __init__(self):
@@ -52,7 +54,8 @@ class App(tk.Tk):
         # Process_img_option_frame elements
         button_ecualizar = tk.Button(process_img_option_frame, text="Ecualizar", font=('Segoe UI', 10), width=24,
                                      command=lambda: __equalization_image())
-        button_expandir = tk.Button(process_img_option_frame, text="Expandir", font=('Segoe UI', 10), width=24)
+        button_expandir = tk.Button(process_img_option_frame, text="Expandir", font=('Segoe UI', 10), width=24,
+                                    command=lambda: __expand_image())
         button_ecualizar.grid(row=0, column=0, padx=10, pady=10)
         button_expandir.grid(row=0, column=1, padx=10, pady=10)
 
@@ -103,8 +106,7 @@ class App(tk.Tk):
             __embed_histogram_plot_to_tkinter(img, output_frame, 0, 1)
             __embed_img_to_tkinter(img)
 
-            if self.img_to_process is not None:
-                del self.img_to_process
-
         def __expand_image():
-            pass
+            img = cv2.convertScaleAbs(self.img_to_process, alpha=_ALPHA, beta=_BETA)
+            __embed_histogram_plot_to_tkinter(img, output_frame, 0, 1)
+            __embed_img_to_tkinter(img)
