@@ -9,7 +9,6 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
 _MAX_SIZE = (200, 200)
-_PLOT_SIZE = (5, 5)
 _ALPHA = 1.5
 _BETA = 10
 
