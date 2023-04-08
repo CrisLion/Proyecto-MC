@@ -1,6 +1,6 @@
 import cv2
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, messagebox
 from PIL import ImageTk, Image
 import matplotlib
 matplotlib.use("TkAgg")
@@ -62,6 +62,13 @@ class App(tk.Tk):
         label_output_image = tk.Label(output_frame)
         label_output_image.grid(row=0, column=0, padx=10, pady=10)
 
+        def __verify_selected_image() -> bool:
+            if self.img_to_process is None:
+                messagebox.showerror(message="Debe de seleccionar una imagen", title="Imagen no seleccionada")
+                return False
+            else:
+                return True
+
         def __embed_histogram_plot_to_tkinter(img, frame: tk.Frame, _row: int, _column: int) -> None:
 
             histogram = cv2.calcHist([img], [0], None, [256], [0, 256])
@@ -101,11 +108,17 @@ class App(tk.Tk):
             __embed_histogram_plot_to_tkinter(self.img_to_process, select_img_frame, 0, 2)
 
         def __equalization_image():
+            if __verify_selected_image() is not True:
+                return None
+
             img = cv2.equalizeHist(self.img_to_process)
             __embed_histogram_plot_to_tkinter(img, output_frame, 0, 1)
             __embed_img_to_tkinter(img)
 
         def __expand_image():
+            if __verify_selected_image() is not True:
+                return None
+
             img = cv2.convertScaleAbs(self.img_to_process, alpha=_ALPHA, beta=_BETA)
             __embed_histogram_plot_to_tkinter(img, output_frame, 0, 1)
             __embed_img_to_tkinter(img)
